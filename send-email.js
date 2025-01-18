@@ -1,47 +1,33 @@
-require('dotenv').config()
-const express = require('express')
 const nodemailer = require('nodemailer')
-const bodyParser = require('body-parser')
-const cors = require('cors')
 
-const app = express()
-app.use(cors({
-    origin: 'https://valebytes.com.br/',
-    methods: 'GET,POST',
-    allowedHeaders: ['Content-Type']
-}))
+module.exports = async (req, res) => {
+    if (req.method === 'POST') {
+        const { name, phone, email, message } = req.body
 
-app.use(bodyParser.json())
-
-app.post('/send-email', async (req, res) => {
-    const { name, phone, email, message } = req.body
-
-    const transporter = nodemailer.createTransport({
-        host: "smtp.hostinger.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    })
-
-    try {
-        await transporter.sendMail({
-            from: `${name} <contato@valebytes.com.br>`,
-            to: "contato@valebytes.com.br",
-            subject: `Projeto de ${name}`,
-            text: `${message}\n\n${phone}\n\n${email}`
+        const transporter = nodemailer.createTransport({
+            host: "smtp.hostinger.com",
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
         })
 
-        res.status(200).json({ message: "Email enviado com sucesso!" })
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: "Erro ao enviar o email." })
-    }
-})
+        try {
+            await transporter.sendMail({
+                from: `${name} <contato@valebytes.com.br>`,
+                to: "contato@valebytes.com.br",
+                subject: `Projeto de ${name}`,
+                text: `${message}\n\n${phone}\n\n${email}`
+            })
 
-const PORT = process.env.PORT
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
+            return res.status(200).json({ message: "Email enviado com sucesso!" })
+        } catch (error) {
+            console.error(error)
+            return res.status(500).json({ message: "Erro ao enviar o email." })
+        }
+    } else {
+        return res.status(405).json({ message: "Método não permitido." })
+    }
+}
