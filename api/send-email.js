@@ -4,7 +4,7 @@ const cors = require('cors');
 module.exports = async (req, res) => {
     // Configuração do CORS
     const corsOptions = {
-        origin: 'https://valebytes.com.br', // Domínio do seu front-end
+        origin: ['https://valebytes.com.br', 'https://www.valebytes.com.br'],
         methods: 'GET,POST',
         allowedHeaders: ['Content-Type'],
     };
