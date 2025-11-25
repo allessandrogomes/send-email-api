@@ -2,39 +2,41 @@ const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Lista de origens permitidas
 const allowedOrigins = [
   'https://valebytes.com.br', 
   'https://www.valebytes.com.br'
 ];
 
 module.exports = async function handler(req, res) {
-  // Configurar CORS - deve ser a primeira coisa
   const origin = req.headers.origin;
+  
+  // Headers CORS
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight por 24h
   res.setHeader('Vary', 'Origin');
 
-  // Responder imediatamente para OPTIONS
+  // Preflight request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(200).json({
+      message: 'Preflight OK'
+    });
   }
 
   if (req.method === 'POST') {
-    const { name, phone, email, message } = req.body;
-
-    // Basic validation
-    if (!name || !email || !message) {
-      return res.status(400).json({ 
-        message: "Nome, email e mensagem são obrigatórios." 
-      });
-    }
-
     try {
+      const { name, phone, email, message } = req.body;
+
+      if (!name || !email || !message) {
+        return res.status(400).json({ 
+          message: "Nome, email e mensagem são obrigatórios." 
+        });
+      }
+
       await resend.emails.send({
         from: "ValeBytes <contato@valebytes.com.br>",
         to: "contato@valebytes.com.br",
