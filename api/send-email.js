@@ -2,9 +2,18 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const allowedOrigins = [
+  "https://valebytes.com.br",
+  "https://www.valebytes.com.br"
+];
+
 export default async function handler(req, res) {
-  // Headers de CORS para todas as respostas
-  res.setHeader("Access-Control-Allow-Origin", "https://valebytes.com.br");
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
