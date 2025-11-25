@@ -5,8 +5,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Lista de origens permitidas
 const allowedOrigins = ['https://valebytes.com.br', 'https://www.valebytes.com.br'];
 
-module.exports = async function handler(req, res) {
-  // Configurar CORS headers baseado na origem da requisição
+// Função para aplicar CORS
+function applyCORS(req, res) {
   const origin = req.headers.origin;
   
   if (allowedOrigins.includes(origin)) {
@@ -14,8 +14,13 @@ module.exports = async function handler(req, res) {
   }
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+}
+
+module.exports = async function handler(req, res) {
+  // Aplicar CORS para todas as requisições
+  applyCORS(req, res);
 
   // Handle OPTIONS request (preflight)
   if (req.method === 'OPTIONS') {
