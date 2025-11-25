@@ -1,38 +1,35 @@
-const nodemailer = require("nodemailer");
-const cors = require("cors");
+import { Resend } from "resend";
 
-module.exports = async (req, res) => {
-  // === CORS manual para garantir ===
-  res.setHeader("Access-Control-Allow-Origin", "https://valebytes.com.br");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // === Responder preflight OPTIONS ===
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido" });
   }
 
-  // === Apenas POST segue ===
-  if (req.method === "POST") {
+  try {
     const { name, phone, email, message } = req.body;
 
-    try {
-      await resend.emails.send({
-        from: "ValeBytes <contato@valebytes.com.br>",
-        to: "contato@valebytes.com.br",
-        reply_to: email,
-        subject: `Projeto de ${name}`,
-        text: `Nome: ${name}\nTelefone: ${
-          phone || "Não informado"
-        }\nEmail: ${email}\n\nMensagem:\n${message}`,
+    if (!name || !phone || !email || !message) {
+      return res.status(400).json({
+        error: "Campos obrigatórios: to, subject, e html ou text.",
       });
-
-      return res.status(200).json({ message: "Email enviado com sucesso!" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Erro ao enviar o email." });
     }
-  }
 
-  return res.status(405).json({ message: "Método não permitido." });
-};
+    const result = await resend.emails.send({
+      from: "ValeBytes <contato@valebytes.com.br>",
+      to: "contato@valebytes.com.br",
+      reply_to: email,
+      subject: `Projeto de ${name}`,
+      text: `Nome: ${name}\nTelefone: ${
+        phone || "Não informado"
+      }\nEmail: ${email}\n\nMensagem:\n${message}`,
+    });
+
+    return res.status(200).json({ success: true, result });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message || "Erro ao enviar e-mail",
+    });
+  }
+}

@@ -1,13 +1,8 @@
 {
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://valebytes.com.br" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
-        { "key": "Access-Control-Allow-Credentials", "value": "true" }
-      ]
+  "version": 2,
+  "functions": {
+    "api/send-email.js": {
+      "runtime": "nodejs18.x"
     }
-  ]
+  }
 }
