@@ -1,5 +1,5 @@
-import { Resend } from "resend";
-import Cors from 'cors';
+const { Resend } = require("resend");
+const Cors = require('cors');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -20,7 +20,7 @@ function runMiddleware(req, res, fn) {
   });
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   await runMiddleware(req, res, cors);
 
   if (req.method === 'POST') {
@@ -43,4 +43,4 @@ export default async function handler(req, res) {
   } else {
     return res.status(405).json({ message: "Método não permitido." });
   }
-}
+};
