@@ -3,8 +3,21 @@ const Cors = require('cors');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Lista de origens permitidas
+const allowedOrigins = ['https://valebytes.com.br', 'https://www.valebytes.com.br'];
+
+// CORS configurado dinamicamente
 const cors = Cors({
-  origin: ['https://valebytes.com.br', 'https://www.valebytes.com.br'],
+  origin: function (origin, callback) {
+    // Permitir requests sem origin (como mobile apps ou curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -22,6 +35,7 @@ function runMiddleware(req, res, fn) {
 }
 
 module.exports = async function handler(req, res) {
+  // Handle OPTIONS request (preflight)
   if (req.method === 'OPTIONS') {
     await runMiddleware(req, res, cors);
     return res.status(200).end();
@@ -32,6 +46,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'POST') {
     const { name, phone, email, message } = req.body;
 
+    // Basic validation
     if (!name || !email || !message) {
       return res.status(400).json({ 
         message: "Nome, email e mensagem são obrigatórios." 
@@ -53,7 +68,11 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ message: "Erro ao enviar o email." });
     }
   } else {
-    res.setHeader('Access-Control-Allow-Origin', 'https://valebytes.com.br');
+    // Set CORS headers dinamicamente baseado na origem da requisição
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
