@@ -1,44 +1,43 @@
-const nodemailer = require('nodemailer');
-const cors = require('cors');
+import { Resend } from "resend";
 
-module.exports = async (req, res) => {
-    // Configuração do CORS
-    const corsOptions = {
-        origin: 'https://valebytes.com.br', // Domínio do seu front-end
-        methods: 'GET,POST',
-        allowedHeaders: ['Content-Type'],
-    };
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // Aplica a configuração do CORS à requisição
-    cors(corsOptions)(req, res, async () => {
-        if (req.method === 'POST') {
-            const { name, phone, email, message } = req.body;
+const allowedOrigins = [
+    "http://localhost:3001",
+    "https://valebytes.com.br",
+    "https://www.valebytes.com.br"
+];
 
-            const transporter = nodemailer.createTransport({
-                host: "smtp.hostinger.com",
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                }
-            });
+export default async function handler(req, res) {
+    const origin = req.headers.origin;
 
-            try {
-                await transporter.sendMail({
-                    from: `${name} <contato@valebytes.com.br>`,
-                    to: "contato@valebytes.com.br",
-                    subject: `Projeto de ${name}`,
-                    text: `${message}\n\n${phone}\n\n${email}`
-                });
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    }
 
-                return res.status(200).json({ message: "Email enviado com sucesso!" });
-            } catch (error) {
-                console.error(error);
-                return res.status(500).json({ message: "Erro ao enviar o email." });
-            }
-        } else {
-            return res.status(405).json({ message: "Método não permitido." });
-        }
-    });
-};
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
+    }
+
+    if (req.method !== "POST") {
+        return res.status(405).end();
+    }
+
+    const { name, phone, email, message } = req.body;
+
+    try {
+        await resend.emails.send({
+            from: "ValeBytes <contato@valebytes.com.br>",
+            to: "contato@valebytes.com.br",
+            reply_to: email,
+            subject: `Projeto de ${name}`,
+            text: `${message}\n\nTelefone: ${phone}\nEmail: ${email}`
+        });
+
+        return res.status(200).json({ message: "Enviado!" });
+    } catch (err) {
+        return res.status(500).json({ message: "Erro ao enviar." });
+    }
+}
