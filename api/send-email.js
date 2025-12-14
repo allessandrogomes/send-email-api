@@ -1,10 +1,9 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { transporter } from "../lib/mailer";
 
 const allowedOrigins = [
   "https://valebytes.com.br",
-  "https://www.valebytes.com.br"
+  "https://www.valebytes.com.br",
+  "http://localhost:3000/",
 ];
 
 export default async function handler(req, res) {
@@ -36,8 +35,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const result = await resend.emails.send({
-      from: "ValeBytes <contato@valebytes.com.br>",
+    const result = await transporter.sendMail({
+      from: "ValeBytes <${process.env.SMTP_USER}>",
       to: "contato@valebytes.com.br",
       reply_to: email,
       subject: `Projeto de ${name}`,
