@@ -1,4 +1,4 @@
-import { transporter } from "./mailer";
+import { transporter } from "./mailer.js";
 
 const allowedOrigins = [
   "https://valebytes.com.br",
