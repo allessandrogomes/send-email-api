@@ -1,4 +1,4 @@
-import { transporter } from "../lib/mailer";
+import { transporter } from "./mailer";
 
 const allowedOrigins = [
   "https://valebytes.com.br",
