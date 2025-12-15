@@ -3,7 +3,6 @@ import { transporter } from "./mailer.js";
 const allowedOrigins = [
   "https://valebytes.com.br",
   "https://www.valebytes.com.br",
-  "http://localhost:3000",
 ];
 
 export default async function handler(req, res) {
