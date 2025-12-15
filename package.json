@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "resend": "latest"
+    "nodemailer": "^7.0.11"
   }
 }
